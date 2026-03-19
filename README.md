@@ -46,8 +46,55 @@ This workflow acts as an automated **Sales Development Representative (SDR)**. I
     * **High-Value**: Slack Notification ➡️ Google Calendar Event ➡️ Welcome Email ➡️ 4-day Wait ➡️ Follow-up Email.
     * **Medium-Value**: Manager Approval Request ➡️ If approved, routes to High-Value path.
     * **Low-Value/Discarded**: Logged in Google Sheets for future marketing nurture.
+  
+```mermaid
+graph TD
+    %% Trigger
+    A[Form Submission] -->|Webhook| B(n8n Workflow Engine)
 
----
+    %% Validation & Enrichment
+    B --> C{Email Validation}
+    C -->|Valid| D[Hunter.io API]
+    C -->|Invalid| E[(Log: Discarded)]
+    
+    D -->|Enrich Data| F[Airtable CRM Lookup]
+    
+    %% Scoring
+    F --> G{Lead Scoring Logic}
+    G -->|High Value| H[High-Value Path]
+    G -->|Medium Value| I[Medium-Value Path]
+    G -->|Low Value| J[Low-Value Path]
+
+    %% Actions: High Value
+    H --> H1[Slack Alert]
+    H --> H2[Google Calendar Invite]
+    H --> H3[Gmail: Welcome Series]
+
+    %% Actions: Medium Value
+    I --> I1[Gmail: Manager Approval]
+    I1 -->|Approved| H
+    I1 -->|Denied| E
+
+    %% Actions: Low Value
+    J --> J1[(Google Sheets: Nurture List)]
+
+    %% Document Generation (Parallel for High/Med)
+    H & I1 --> K[Google Docs Template]
+    K --> L[Convert to PDF]
+    L --> M[Google Drive Upload]
+
+    %% Final Logging
+    H1 & J1 & M --> N[(Master Log: Google Sheets)]
+
+```
+
+    
+
+
+
+    
+  
+ 
 
 ## ⚙️ Setup
 
@@ -59,3 +106,5 @@ This workflow acts as an automated **Sales Development Representative (SDR)**. I
     * Airtable
 
 3.	**Environment Variables**: Ensure the Folder IDs and Spreadsheet IDs in the node parameters match your local setup.
+
+
